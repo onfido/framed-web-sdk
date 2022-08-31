@@ -1,8 +1,5 @@
 name: Build
-on:
-  push:
-    branches:
-      - 'master'
+on: [push, pull_request]
 env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -26,5 +23,5 @@ jobs:
           rm dist/*.map
       - name: Upload dist to AWS S3
         run: | 
-          aws s3 cp ./dist s3://${{ env.AWS_S3_BUCKET }}/web-sdk-client/ --exclude "*.html" --recursive --acl public-read
+          aws s3 cp ./dist s3://${{ env.AWS_S3_BUCKET }}/web-sdk-client/ --exclude "*.js.map" --recursive --acl public-read
 
