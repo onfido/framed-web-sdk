@@ -1,7 +1,6 @@
 # Framed Web SDK
 
-Onfido offers the [web SDK](https://github.com/onfido/onfido-sdk-ui) as an open source project on github. The web sdk
-is a library that can be bootstrapped with a set of parameters and renders a user interface to capture document and face 
+The web sdk is a library that can be bootstrapped with a set of parameters and renders a user interface to capture document and face 
 information from an applicant.
 
 It's running in the context of a 3rd party and therefore updating to the latest version is out of control of Onfido. The 
@@ -11,8 +10,7 @@ by onfido, so we can deliver the latest version of the SDK to the customers with
 # How to use it
 ## Embedding and initialization
 
-1. Embed the client javascript, `<script src="https://assets.onfido.com/web-sdk-client/client.js"></script>` in your html page. Do not deliver this javascript by
-yourself, as we ensure it's always up to date and delivered fast via a cdn.
+1. Embed the client javascript, `<script src="https://assets.onfido.com/web-sdk-client/client.js"></script>` in your html page. Do not deliver this javascript by yourself, as we ensure it's always up to date and delivered fast via a cdn.
 2. call `const handle = Onfido.init(parameter)` with an object. All parameters documented [here](https://github.com/onfido/onfido-sdk-ui#6-initialize-the-sdk) are supported.
 
 ## custom css
@@ -77,7 +75,8 @@ window.handle = Onfido.init({
 ```
 
 # Example
-     
+## static
+
 ```html
 <!DOCTYPE html>
 <html lang="en">
@@ -106,6 +105,28 @@ window.handle = Onfido.init({
 </html>
 ```
 
+## workflow
 
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <script src="https://assets.onfido.com/web-sdk-client/client.js"></script>
+    <script>
+        window.handle = Onfido.init({
+            workflowLinkId: <WORKFLOW_LINK_ID>,
+            region: "EU",
+            onComplete: (a) => {
+              console.log(a)
+            },
+            `
+        })
+    </script>
+</body>
+</html>
+```
 
 
