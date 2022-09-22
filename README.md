@@ -117,8 +117,8 @@ window.handle = Onfido.init({
     <script src="https://assets.onfido.com/web-sdk-client/client.js"></script>
     <script>
         window.handle = Onfido.init({
-            workflowLinkId: <WORKFLOW_LINK_ID>,
-            region: "EU",
+            workflowLinkId: "<WORKFLOW_LINK_ID>",
+            region: "EU", // make sure to provide region "EU", "US", "CA"
             onComplete: (a) => {
               console.log(a)
             },
