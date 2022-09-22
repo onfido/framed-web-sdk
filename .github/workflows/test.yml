@@ -1,0 +1,111 @@
+name: Test
+on:
+  pull_request:
+    types: [ opened, synchronize, reopened ]
+
+env:
+  API_TOKEN_EU: ${{ secrets.API_TOKEN_EU }}
+  API_TOKEN_US: ${{ secrets.API_TOKEN_US }}
+  API_TOKEN_CA: ${{ secrets.API_TOKEN_CA }}
+
+jobs:
+  chrome:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'npm'
+
+      - uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+
+      - uses: actions/checkout@v3
+        with:
+          repository: it-ony/webtest
+          path: webtest
+
+      - name: Build webtest
+        run: cd webtest && mvn --no-transfer-progress clean install && cd ..
+
+      - name: Setup Chromedriver
+        uses: nanasess/setup-chromedriver@v1
+
+      - name: Prepare test server
+        run: |
+          npm ci
+          npm run build:test
+
+      - uses: isbang/compose-action@v1.2.0
+
+      - name: run tests
+        working-directory: ./test/webtest
+        env:
+          BUILD: ${{ github.ref }}-${{ github.run_id }}
+        run: |
+          mvn --no-transfer-progress clean verify -Dbrowser=chrome -DthreadCount=10 -Denvironment=headless
+          echo "::set-output name=exit_code::$?"
+
+      - name: Upload screenshot reports
+        uses: actions/upload-artifact@v2
+        with:
+          name: chrome-testrun-report
+          path: test/webtest/target/screenShot
+          retention-days: 5
+  browserstack:
+    runs-on: ubuntu-latest
+    env:
+      BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+      BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+      BROWSERSTACK_LOCAL_BINARY: /tmp/browserstacklocal
+      BUILD: ${{ github.ref }}-${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'npm'
+
+      - uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+
+      - uses: actions/checkout@v3
+        with:
+          repository: it-ony/webtest
+          path: webtest
+
+      - name: Build webtest
+        run: cd webtest && mvn --no-transfer-progress clean install && cd ..
+
+      - name: Prepare test server
+        run: |
+          npm ci
+          npm run build:test
+
+      - name: Download local browserstack
+        id: download-browserstack
+        run: curl -o /tmp/browserstacklocal https://bstack-local-prod.s3.amazonaws.com/BrowserStackLocal-linux-x64 && chmod 777 /tmp/browserstacklocal
+
+      - uses: isbang/compose-action@v1.2.0
+
+      - name: Firefox
+        working-directory: ./test/webtest
+        run: |
+          mvn --no-transfer-progress clean verify -DthreadCount=2 -Denvironment=browserstack -Dbrowser=firefox
+
+      - name: Edge
+        working-directory: ./test/webtest
+        run: |
+          mvn --no-transfer-progress clean verify -DthreadCount=2 -Denvironment=browserstack -Dbrowser=edge
+
+      - name: Safari
+        working-directory: ./test/webtest
+        run: |
+          mvn --no-transfer-progress clean verify -DthreadCount=2 -Denvironment=browserstack -Dbrowser=safari
