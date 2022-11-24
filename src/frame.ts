@@ -52,7 +52,6 @@ const filterParameterKeys:string[] = ['containerId', 'containerEl', 'workflowLin
 ((window: W, document: Document) => {
 
     const sdk: Sdk = window.sdk;
-    //const OnfidoIntegration: OnfidoIntegration = 
 
     const basePath = `https://assets.onfido.com/web-sdk-releases/${sdk.version}`
 
