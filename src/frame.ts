@@ -15,10 +15,17 @@ type OnfidoSdk = {
     init: (parameter: SdkParameter) => OnfidoSdkHandle
 }
 
+type OnfidoIntegration = { 
+    name: string, 
+    version?: string,
+    wrapper?: string,
+}
+
 type W = {
     sdk: Sdk,
     Onfido: OnfidoSdk,
-    handle: OnfidoSdkHandle
+    handle: OnfidoSdkHandle,
+    OnfidoIntegration: OnfidoIntegration
 } & Window
 
 export type ProxyMethodCall = {
@@ -45,6 +52,7 @@ const filterParameterKeys:string[] = ['containerId', 'containerEl', 'workflowLin
 ((window: W, document: Document) => {
 
     const sdk: Sdk = window.sdk;
+    //const OnfidoIntegration: OnfidoIntegration = 
 
     const basePath = `https://assets.onfido.com/web-sdk-releases/${sdk.version}`
 
