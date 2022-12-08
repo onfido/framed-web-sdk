@@ -36,44 +36,29 @@ window.handle = Onfido.init({
                                                                                                 
 ## Workflow
 
-Onfido’s Studio orchestration platform offers a more dynamic and flexible way of guiding applicants through the required steps of a verification journey. The best way of doing this is to configure the SDK with a workflow run ID.
+Onfido’s Studio orchestration platform offers a more dynamic and flexible way of guiding applicants through the required steps of a verification journey. The best way of doing this is to make use out of workflow_links.
 
-To do this, start by [creating a workflow run](https://documentation.onfido.com/#create-workflow-run) using the Onfido API. At a minimum, you will need to provide an applicant ID and a workflow ID for a valid, active Studio workflow:
+To do this, start by [creating a workflow link](TBC) using the Onfido API. At a minimum, you will need to provide a workflow ID for a valid, active Studio workflow:
 
 ```http request
-POST /v3.5/workflow_runs HTTP/1.1
-Host: api.eu.onfido.com
-Authorization: Token token=<YOUR_API_TOKEN>
+POST https://api.<region>.onfido.com/v4/workflow_links
 Content-Type: application/json
+Authorization: Token token=<YOUR API KEY>
 
 {
-  "workflow_id": "<WORKFLOW_ID>",
-  "applicant_id": "<APPLICANT_ID"
+    "workflow_id": "<WORKFLOW_ID>",
 }
 ```
 
-You can then use the workflow run `id` returned API response payload:
+You can then use the workflow link `id` returned in API response payload:
 
 ```json
 {
-  "id": "<WORKFLOW_RUN_ID>",
-  "applicant_id": "<APPLICANT_ID>",
-  "workflow_id": "<WORKFLOW_ID>",
-  "workflow_version_id": 11,
-  "status": "approved",
-  "dashboard_url":"https://dashboard.onfido.com/results/<WORKFLOW_RUN_ID>"
-  "output": {"prop1": "val_1", "prop2": 10}, 
-  "reasons": ["reason_1", "reason_2"],
-  "error": null,
-  "created_at": "2022-06-28T15:39:42Z",
-  "updated_at": "2022-07-28T15:40:42Z",
-  "link": {
-      "completed_redirect_url": "https://example.onfido.com",
-      "expired_redirect_url": "https://example.onfido.com",
-      "expires_at": "2022-10-17T14:40:50Z",
-      "language": "en_US",
-      "url": "https://eu.onfido.app/l/<WORKFLOW_RUN_ID>"
-  },
+    "id": "<ID>",
+    "applicant_id": "<APPLICANT_ID>",
+    "expires": "2022-06-26T12:56:25.547952",
+    "url": "https://studio.eu.onfido.app/l/<ID>",
+    "workflow_id": "<WORKFLOW_ID>"
 }
 ```
 
@@ -81,7 +66,7 @@ to bootstrap the SDK, using the following javascript code:
 
 ```js
 window.handle = Onfido.init({
-    workflowRunId: "<WORKFLOW_RUN_ID>"
+    workflowLinkId: "<ID>"
 });
 ```
 
@@ -128,7 +113,7 @@ window.handle = Onfido.init({
     <script src="https://assets.onfido.com/web-sdk-client/client.js"></script>
     <script>
         window.handle = Onfido.init({
-            workflowRunId: "<WORKFLOW_RUN_ID>",
+            workflowLinkId: "<WORKFLOW_LINK_ID>",
             region: "EU", // make sure to provide region "EU", "US", "CA"
             onComplete: (a) => {
               console.log(a)
