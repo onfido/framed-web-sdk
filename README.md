@@ -1,35 +1,32 @@
 # Framed Web SDK
 
-The web sdk is a library that can be bootstrapped with a set of parameters and renders a user interface to capture document and face 
-information from an applicant.
+The Onfido [Web SDK](https://github.com/onfido/onfido-sdk-ui) is a library that can be bootstrapped with a set of parameters in order to render a user interface to ensure the correct capture and upload of applicant information, such as identity documents, selfie photos and videos.
 
-It's running in the context of a 3rd party and therefore updating to the latest version is out of control of Onfido. The 
-framed Web SDK is an idea to host a small javascript that bootstraps the web sdk in an iframe. The iframe will be hosted 
-by onfido, so we can deliver the latest version of the SDK to the customers without any change on their end.
+The Web SDK runs in the context of a 3rd party, meaning that customers are responsible for updating to the latest versions as they are released.  
+
+The framed Web SDK is an idea for Onfido to host a small javascript that bootstraps the Web SDK in an iframe. Because this iframe is hosted by Onfido, we can deliver the latest version of the SDK to customers without any required changes on their side.
+`
 
 # How to use it
 ## Embedding and initialization
 
-1. Embed the client javascript, `<script src="https://assets.onfido.com/web-sdk-client/client.js"></script>` in your html page. Do not deliver this javascript by yourself, as we ensure it's always up to date and delivered fast via a cdn.
-2. call `const handle = Onfido.init(parameter)` with an object. All parameters documented [here](https://github.com/onfido/onfido-sdk-ui#6-initialize-the-sdk) are supported.
+1. Embed the client javascript, `<script src="https://assets.onfido.com/web-sdk-client/client.js"></script>` in your html page. Do not deliver this javascript yourself, as we ensure it's always up to date and delivered fast via a CDN.
+2. Call `const handle = Onfido.init(parameter)` with an object to initialise the SDK. All supported parameters are documented [here](https://github.com/onfido/onfido-sdk-ui#6-initialize-the-sdk).
 
-## custom css
+## Custom css
 
-As we run the sdk within an iframe to secure your applicants most, you can style the content in the iframe to your needs by passing custom css via
-the `css` parameter.
+As we run the SDK within an iframe to verify your applicants, you can style the content in the iframe to suit your needs by passing custom css via the `css` parameter.
 
-## tearing down
+## Tearing down
 
 To tear down the sdk, use the handle object returned from the `Onfido.init` method and call `handle.tearDown()` to remove the SDK from your webpage.
 
 # Modes of operation
-## static
+## Static
          
-This is the old way of the web sdk, where the parameters and steps are pre-assigned and there is no workflow evaluated 
-behind the scenes. Use this mode, if you do not have access to studio.
+This is the standard method for Web SDK [integrations](https://github.com/onfido/onfido-sdk-ui#6-initialize-the-sdk), where the parameters and steps are pre-assigned and there is no workflow evaluated behind the scenes. Use this static mode if you do not have access to [Onfido Studio](https://developers.onfido.com/guide/onfido-studio-product).
 
-For this mode at least a [SDK token](https://github.com/onfido/onfido-sdk-ui#3-generate-an-sdk-token) needs to be passed 
-as `token` in the parameter object.
+At a minimum, you will need to pass an [SDK token](https://github.com/onfido/onfido-sdk-ui#3-generate-an-sdk-token) in the `token` parameter object:
 
 ```js
 window.handle = Onfido.init({
@@ -37,45 +34,59 @@ window.handle = Onfido.init({
 });
 ```
                                                                                                 
-## workflow
+## Workflow
 
-With orchestration onfido offers a more dynamic and flexible way of sending the user through the required steps. The best
-way of using orchestration is to make use out of workflow_links.
+Onfido’s Studio orchestration platform offers a more dynamic and flexible way of guiding applicants through the required steps of a verification journey. The best way of doing this is to configure the SDK with a workflow run ID.
 
-Therefore create a workflow link via the api first
+To do this, start by [creating a workflow run](https://documentation.onfido.com/#create-workflow-run) using the Onfido API. At a minimum, you will need to provide an applicant ID and a workflow ID for a valid, active Studio workflow:
 
 ```http request
-POST https://api.<region>.onfido.com/v4/workflow_links
+POST /v3.5/workflow_runs HTTP/1.1
+Host: api.eu.onfido.com
+Authorization: Token token=<YOUR_API_TOKEN>
 Content-Type: application/json
-Authorization: Token token=<YOUR API KEY>
 
 {
-    "workflow_id": "<WORKFLOW_ID>",
+  "workflow_id": "<WORKFLOW_ID>",
+  "applicant_id": "<APPLICANT_ID"
 }
 ```
 
-Then use the id of the response payload
+You can then use the workflow run `id` returned API response payload:
 
 ```json
 {
-    "id": "<ID>",
-    "applicant_id": "<APPLICANT_ID>",
-    "expires": "2022-06-26T12:56:25.547952",
-    "url": "https://studio.eu.onfido.app/l/<ID>",
-    "workflow_id": "<WORKFLOW_ID>"
+  "id": "<WORKFLOW_RUN_ID>",
+  "applicant_id": "<APPLICANT_ID>",
+  "workflow_id": "<WORKFLOW_ID>",
+  "workflow_version_id": 11,
+  "status": "approved",
+  "dashboard_url":"https://dashboard.onfido.com/results/<WORKFLOW_RUN_ID>"
+  "output": {"prop1": "val_1", "prop2": 10}, 
+  "reasons": ["reason_1", "reason_2"],
+  "error": null,
+  "created_at": "2022-06-28T15:39:42Z",
+  "updated_at": "2022-07-28T15:40:42Z",
+  "link": {
+      "completed_redirect_url": "https://example.onfido.com",
+      "expired_redirect_url": "https://example.onfido.com",
+      "expires_at": "2022-10-17T14:40:50Z",
+      "language": "en_US",
+      "url": "https://eu.onfido.app/l/<WORKFLOW_RUN_ID>"
+  },
 }
 ```
 
-to bootstrap the sdk with the following javascript code
+to bootstrap the SDK, using the following javascript code:
 
 ```js
 window.handle = Onfido.init({
-    workflowLinkId: "<ID>"
+    workflowRunId: "<WORKFLOW_RUN_ID>"
 });
 ```
 
-# Example
-## static
+# Example implementations
+## Static
 
 ```html
 <!DOCTYPE html>
@@ -105,7 +116,7 @@ window.handle = Onfido.init({
 </html>
 ```
 
-## workflow
+## Workflow
 
 ```html
 <!DOCTYPE html>
@@ -117,7 +128,7 @@ window.handle = Onfido.init({
     <script src="https://assets.onfido.com/web-sdk-client/client.js"></script>
     <script>
         window.handle = Onfido.init({
-            workflowLinkId: "<WORKFLOW_LINK_ID>",
+            workflowRunId: "<WORKFLOW_RUN_ID>",
             region: "EU", // make sure to provide region "EU", "US", "CA"
             onComplete: (a) => {
               console.log(a)
